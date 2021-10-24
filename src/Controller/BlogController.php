@@ -7,6 +7,7 @@ use Serializable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -35,23 +36,22 @@ class BlogController extends AbstractController
 
     /**
      * @Route(
-     *          "/post/{id}",
-     *          name="blog_by_id",
-     *          requirements={"id"="\d+"}
+     *       "/post/{id}",
+     *       name="blog_by_id",
+     *       requirements={"id"="\d+"},
+     *       methods={"GET"}
      * )
      *
-     * @param int $id
+     * @param BlogPost $id
      * @return JsonResponse
      */
-    public function post(int $id): JsonResponse
+    public function post(BlogPost $post): JsonResponse
     {
-        return $this->json(
-            $this->getDoctrine()->getRepository(BlogPost::class)->find($id)
-        );
+        return $this->json($post);
     }
 
     /**
-     * @Route("/post/{slug}", name="blog_by_slug")
+     * @Route("/post/{slug}", name="blog_by_slug", methods={"GET"})
      *
      * @param string $slug
      * @return JsonResponse
@@ -80,5 +80,16 @@ class BlogController extends AbstractController
         return $this->json($blogPost);
     }
 
+    /** 
+     * @Route("/post/{id}", name="blog_delete", methods={"DELETE"}) 
+     */
+    public function delete(BlogPost $post)
+    {
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($post);
+        $em->flush();
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
 
 }
